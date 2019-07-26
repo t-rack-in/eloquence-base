@@ -135,7 +135,13 @@ class Joiner implements JoinerContract
     {
         list($fk, $pk) = $this->getJoinKeys($relation);
 
-        $join = (new Join($this->query, $type, $table))->on($fk, '=', $pk);
+        if (is_array($fk) && is_array($pk)) {
+            foreach ($fk as $index => $key) {
+                $join = (new Join($this->query, $type, $table))->on($key, '=', $pk[$index]);
+            }
+        } else {
+            $join = (new Join($this->query, $type, $table))->on($fk, '=', $pk);
+        }
 
         if (in_array(SoftDeletes::class, class_uses_recursive($relation->getRelated()))) {
             $join->whereNull($relation->getRelated()->getQualifiedDeletedAtColumn());
@@ -185,6 +191,7 @@ class Joiner implements JoinerContract
      */
     protected function getJoinKeys(Relation $relation)
     {
+
         if ($relation instanceof MorphTo) {
             throw new LogicException("MorphTo relation cannot be joined.");
         }
@@ -194,7 +201,7 @@ class Joiner implements JoinerContract
         }
 
         if ($relation instanceof BelongsTo) {
-            return [$relation->getQualifiedForeignKeyName(), $relation->getQualifiedOwnerKeyName()];
+            return [$relation->getQualifiedForeignKey(), $relation->getQualifiedOwnerKeyName()];
         }
 
         if ($relation instanceof BelongsToMany) {
