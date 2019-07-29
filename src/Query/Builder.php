@@ -3,8 +3,9 @@
 namespace Sofa\Eloquence\Query;
 
 use Sofa\Eloquence\Subquery;
+use Awobaz\Compoships\Database\Query\Builder as ComposhipsBuilder;
 
-class Builder extends \Illuminate\Database\Query\Builder
+class Builder extends ComposhipsBuilder
 {
     /**
      * Execute an aggregate function on the database.
