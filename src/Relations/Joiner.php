@@ -98,7 +98,7 @@ class Joiner implements JoinerContract
     {
         $relation = $parent->{$segment}();
         $related  = $relation->getRelated();
-        $table    = $related->getTable() . ($relation->getRelated()->relationsAliases[$segment] ? ' as ' . $relation->getRelated()->relationsAliases[$segment] : '');
+        $table    = $related->getTable() . (isset($relation->getRelated()->relationsAliases[$segment]) ? ' as ' . $relation->getRelated()->relationsAliases[$segment] : '');
 
         if ($relation instanceof BelongsToMany || $relation instanceof HasManyThrough) {
             $this->joinIntermediate($parent, $relation, $type);
@@ -198,7 +198,7 @@ class Joiner implements JoinerContract
         if ($relation instanceof HasOneOrMany) {
             $foreignKey = [];
             foreach ($relation->getQualifiedForeignKeyName() as $key) {
-                $foreignKey[] = ($relation->getRelated()->relationsAliases[$segment] ? str_replace($relation->getRelated()->getTable(), $relation->getRelated()->relationsAliases[$segment], $key) : $key);
+                $foreignKey[] = (isset($relation->getRelated()->relationsAliases[$segment]) ? str_replace($relation->getRelated()->getTable(), $relation->getRelated()->relationsAliases[$segment], $key) : $key);
             }
             return [$foreignKey, $relation->getQualifiedParentKeyName()];
         }
@@ -206,7 +206,7 @@ class Joiner implements JoinerContract
         if ($relation instanceof BelongsTo) {
             $foreignKey = [];
             foreach ($relation->getQualifiedOwnerKeyName() as $key) {
-                $foreignKey[] = ($relation->getRelated()->relationsAliases[$segment] ? str_replace($relation->getRelated()->getTable(), $relation->getRelated()->relationsAliases[$segment], $key) : $key);
+                $foreignKey[] = (isset($relation->getRelated()->relationsAliases[$segment]) ? str_replace($relation->getRelated()->getTable(), $relation->getRelated()->relationsAliases[$segment], $key) : $key);
             }
             return [$relation->getQualifiedForeignKey(), $foreignKey];
         }
