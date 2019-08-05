@@ -43,9 +43,9 @@ class Column
      *
      * @return string
      */
-    public function getWrapped()
+    public function getWrapped($model = false)
     {
-        return $this->grammar->wrap($this->getQualifiedName());
+        return $this->grammar->wrap($this->getQualifiedName($model));
     }
 
     /**
@@ -53,8 +53,14 @@ class Column
      *
      * @return string
      */
-    public function getQualifiedName()
+    public function getQualifiedName($model = false)
     {
+        if ($model) {
+            $relationship = explode('.', $this->getMapping())[0];
+            if (isset($model->relationsAliases[$relationship])) {
+                return $model->relationsAliases[$relationship] . '.' . $this->getName();
+            }
+        }
         return $this->getTable().'.'.$this->getName();
     }
 
