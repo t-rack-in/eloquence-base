@@ -98,13 +98,12 @@ class Joiner implements JoinerContract
     {
         $relation = $parent->{$segment}();
         $related  = $relation->getRelated();
-        $table    = $related->getTable();
+        $table    = $related->getTable() . ($relation->getRelated()->relationsAliases[$segment] ? ' as ' . $relation->getRelated()->relationsAliases[$segment] : '');
 
         if ($relation instanceof BelongsToMany || $relation instanceof HasManyThrough) {
             $this->joinIntermediate($parent, $relation, $type);
         }
-
-        if (!$this->alreadyJoined($join = $this->getJoinClause($parent, $relation, $table, $type))) {
+        if (!$this->alreadyJoined($join = $this->getJoinClause($parent, $relation, $table, $type, $segment))) {
             $this->query->joins[] = $join;
         }
 
@@ -131,10 +130,10 @@ class Joiner implements JoinerContract
      * @param  string $table
      * @return \Illuminate\Database\Query\JoinClause
      */
-    protected function getJoinClause(Model $parent, Relation $relation, $table, $type)
+    protected function getJoinClause(Model $parent, Relation $relation, $table, $type, $segment = null)
     {
-        list($fk, $pk) = $this->getJoinKeys($relation);
-
+        list($fk, $pk) = $this->getJoinKeys($relation, $segment);
+//        dump($fk, $pk);
         if (is_array($fk) && is_array($pk)) {
             foreach ($fk as $index => $key) {
                 $join = (new Join($this->query, $type, $table))->on($key, '=', $pk[$index]);
@@ -189,7 +188,7 @@ class Joiner implements JoinerContract
      *
      * @throws \LogicException
      */
-    protected function getJoinKeys(Relation $relation)
+    protected function getJoinKeys(Relation $relation, $segment = null)
     {
 
         if ($relation instanceof MorphTo) {
@@ -197,11 +196,19 @@ class Joiner implements JoinerContract
         }
 
         if ($relation instanceof HasOneOrMany) {
-            return [$relation->getQualifiedForeignKeyName(), $relation->getQualifiedParentKeyName()];
+            $foreignKey = [];
+            foreach ($relation->getQualifiedForeignKeyName() as $key) {
+                $foreignKey[] = ($relation->getRelated()->relationsAliases[$segment] ? str_replace($relation->getRelated()->getTable(), $relation->getRelated()->relationsAliases[$segment], $key) : $key);
+            }
+            return [$foreignKey, $relation->getQualifiedParentKeyName()];
         }
 
         if ($relation instanceof BelongsTo) {
-            return [$relation->getQualifiedForeignKey(), $relation->getQualifiedOwnerKeyName()];
+            $foreignKey = [];
+            foreach ($relation->getQualifiedOwnerKeyName() as $key) {
+                $foreignKey[] = ($relation->getRelated()->relationsAliases[$segment] ? str_replace($relation->getRelated()->getTable(), $relation->getRelated()->relationsAliases[$segment], $key) : $key);
+            }
+            return [$relation->getQualifiedForeignKey(), $foreignKey];
         }
 
         if ($relation instanceof BelongsToMany) {
