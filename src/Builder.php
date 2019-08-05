@@ -79,7 +79,6 @@ class Builder extends HookableBuilder
         $words = is_array($query) ? $query : $parser->parseQuery($query, $fulltext);
 
         $columns = $parser->parseWeights($columns ?: $this->model->getSearchableColumns());
-
         if (count($words) && count($columns)) {
             $this->query->from($this->buildSubquery($words, $columns, $threshold));
         }
@@ -100,7 +99,6 @@ class Builder extends HookableBuilder
         $subquery = new SearchableSubquery($this->query->newQuery(), $this->model->getTable());
 
         $columns = $this->joinForSearch($mappings, $subquery);
-
         $threshold = (is_null($threshold))
                         ? array_sum($columns->getWeights()) / 4
                         : (float) $threshold;
@@ -167,7 +165,6 @@ class Builder extends HookableBuilder
 
         foreach ($columns as $column) {
             list($cases[], $binding) = $this->buildCase($column, $words);
-
             $bindings = array_merge_recursive($bindings, $binding);
         }
 
@@ -201,7 +198,7 @@ class Builder extends HookableBuilder
         foreach ($columns as $column) {
             $wheres[] = implode(
                 ' or ',
-                array_fill(0, count($words), sprintf('%s %s ?', $column->getWrapped(), $operator))
+                array_fill(0, count($words), sprintf('%s %s ?', $column->getWrapped($this->model), $operator))
             );
         }
 
@@ -326,7 +323,7 @@ class Builder extends HookableBuilder
 
             foreach ($words as $key => $word) {
                 if ($this->isLeftMatching($word)) {
-                    $leftMatching[] = sprintf('%s %s ?', $column->getWrapped(), $operator);
+                    $leftMatching[] = sprintf('%s %s ?', $column->getWrapped($this->model), $operator);
                     $bindings['select'][] = $bindings['where'][$key] = $this->caseBinding($word) . '%';
                 }
             }
@@ -341,7 +338,7 @@ class Builder extends HookableBuilder
 
             foreach ($words as $key => $word) {
                 if ($this->isWildcard($word)) {
-                    $wildcards[] = sprintf('%s %s ?', $column->getWrapped(), $operator);
+                    $wildcards[] = sprintf('%s %s ?', $column->getWrapped($this->model), $operator);
                     $bindings['select'][] = $bindings['where'][$key] = '%'.$this->caseBinding($word) . '%';
                 }
             }
