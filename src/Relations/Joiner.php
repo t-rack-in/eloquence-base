@@ -200,7 +200,6 @@ class Joiner implements JoinerContract
             foreach ($relation->getQualifiedForeignKeyName() as $key) {
                 $foreignKey[] = (isset($relation->getParent()->relationsAliases[$segment]) ? str_replace($relation->getRelated()->getTable(), $relation->getParent()->relationsAliases[$segment], $key) : $key);
             }
-//            dump([$foreignKey, $relation->getQualifiedParentKeyName()]);
             return [$foreignKey, $relation->getQualifiedParentKeyName()];
         }
 
