@@ -198,7 +198,7 @@ class Joiner implements JoinerContract
         if ($relation instanceof HasOneOrMany) {
             $foreignKey = [];
             foreach ($relation->getQualifiedForeignKeyName() as $key) {
-                $foreignKey[] = ($relation->getParent()->relationsAliases[$segment] ? str_replace($relation->getRelated()->getTable(), $relation->getParent()->relationsAliases[$segment], $key) : $key);
+                $foreignKey[] = (isset($relation->getParent()->relationsAliases[$segment]) ? str_replace($relation->getRelated()->getTable(), $relation->getParent()->relationsAliases[$segment], $key) : $key);
             }
 //            dump([$foreignKey, $relation->getQualifiedParentKeyName()]);
             return [$foreignKey, $relation->getQualifiedParentKeyName()];
@@ -207,7 +207,7 @@ class Joiner implements JoinerContract
         if ($relation instanceof BelongsTo) {
             $foreignKey = [];
             foreach ($relation->getQualifiedOwnerKeyName() as $key) {
-                $foreignKey[] = ($relation->getParent()->relationsAliases[$segment] ? str_replace($relation->getRelated()->getTable(), $relation->getParent()->relationsAliases[$segment], $key) : $key);
+                $foreignKey[] = (isset($relation->getParent()->relationsAliases[$segment]) ? str_replace($relation->getRelated()->getTable(), $relation->getParent()->relationsAliases[$segment], $key) : $key);
             }
             return [$relation->getQualifiedForeignKey(), $foreignKey];
         }
