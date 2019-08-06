@@ -98,7 +98,7 @@ class Joiner implements JoinerContract
     {
         $relation = $parent->{$segment}();
         $related  = $relation->getRelated();
-        $table    = $related->getTable() . (isset($relation->getRelated()->relationsAliases[$segment]) ? ' as ' . $relation->getRelated()->relationsAliases[$segment] : '');
+        $table    = $related->getTable() . (isset($relation->getParent()->relationsAliases[$segment]) ? ' as ' . $relation->getParent()->relationsAliases[$segment] : '');
 
         if ($relation instanceof BelongsToMany || $relation instanceof HasManyThrough) {
             $this->joinIntermediate($parent, $relation, $type);
@@ -198,21 +198,22 @@ class Joiner implements JoinerContract
         if ($relation instanceof HasOneOrMany) {
             $foreignKey = [];
             foreach ($relation->getQualifiedForeignKeyName() as $key) {
-                $foreignKey[] = (isset($relation->getRelated()->relationsAliases[$segment]) ? str_replace($relation->getRelated()->getTable(), $relation->getRelated()->relationsAliases[$segment], $key) : $key);
+                $foreignKey[] = ($relation->getParent()->relationsAliases[$segment] ? str_replace($relation->getRelated()->getTable(), $relation->getParent()->relationsAliases[$segment], $key) : $key);
             }
+//            dump([$foreignKey, $relation->getQualifiedParentKeyName()]);
             return [$foreignKey, $relation->getQualifiedParentKeyName()];
         }
 
         if ($relation instanceof BelongsTo) {
             $foreignKey = [];
             foreach ($relation->getQualifiedOwnerKeyName() as $key) {
-                $foreignKey[] = (isset($relation->getRelated()->relationsAliases[$segment]) ? str_replace($relation->getRelated()->getTable(), $relation->getRelated()->relationsAliases[$segment], $key) : $key);
+                $foreignKey[] = ($relation->getParent()->relationsAliases[$segment] ? str_replace($relation->getRelated()->getTable(), $relation->getParent()->relationsAliases[$segment], $key) : $key);
             }
             return [$relation->getQualifiedForeignKey(), $foreignKey];
         }
 
         if ($relation instanceof BelongsToMany) {
-            return [$relation->getQualifiedRelatedPivotKeyName(), $relation->getRelated()->getQualifiedKeyName()];
+            return [$relation->getQualifiedRelatedPivotKeyName(), $relation->getParent()->getQualifiedKeyName()];
         }
 
         if ($relation instanceof HasManyThrough) {
