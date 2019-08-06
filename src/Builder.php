@@ -54,9 +54,24 @@ class Builder extends HookableBuilder
         if ($this->query->from instanceof Subquery) {
             $this->wheresToSubquery($this->query->from);
         }
-
         return parent::get($columns);
     }
+
+    /**
+     * Execute the query as a "select" statement.
+     *
+     * @param  array $columns
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    /*public function count($columns = ['*'])
+    {
+        return 100;
+        if ($this->query->from instanceof Subquery) {
+            $this->wheresToSubquery($this->query->from);
+        }
+
+        return parent::count($columns);
+    }*/
 
     /**
      * Search through any columns on current table or any defined relations
@@ -375,7 +390,7 @@ class Builder extends HookableBuilder
      */
     protected function buildEqualsCase(Column $column, array $words)
     {
-        $equals = implode(' or ', array_fill(0, count($words), sprintf('%s = ?', $column->getWrapped())));
+        $equals = implode(' or ', array_fill(0, count($words), sprintf('%s = ?', $column->getWrapped($this->model))));
 
         $score = 15 * $column->getWeight();
 
