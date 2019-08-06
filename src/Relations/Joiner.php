@@ -133,7 +133,7 @@ class Joiner implements JoinerContract
     protected function getJoinClause(Model $parent, Relation $relation, $table, $type, $segment = null)
     {
         list($fk, $pk) = $this->getJoinKeys($relation, $segment);
-//        dump($fk, $pk);
+
         if (is_array($fk) && is_array($pk)) {
             foreach ($fk as $index => $key) {
                 $join = (new Join($this->query, $type, $table))->on($key, '=', $pk[$index]);
