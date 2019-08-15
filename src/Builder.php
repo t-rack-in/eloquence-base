@@ -324,7 +324,6 @@ class Builder extends HookableBuilder
     {
         // THIS IS BAD
         // @todo refactor
-
         $operator = $this->getLikeOperator();
 
         $bindings['select'] = $bindings['where'] = array_map(function ($word) {
@@ -344,9 +343,13 @@ class Builder extends HookableBuilder
             }
 
             if (count($leftMatching)) {
-                $leftMatching = implode(' or ', $leftMatching);
+                /*$leftMatching = implode(' or ', $leftMatching);
                 $score = 5 * $column->getWeight();
-                $case .= " + case when {$leftMatching} then {$score} else 0 end";
+                $case .= "case when {$leftMatching} then {$score} else 0 end";*/
+                foreach ($leftMatching as $left) {
+                    $score = intval((5 * $column->getWeight()) / count($words));
+                    $case .= "case when {$left} then {$score} else 0 end + ";
+                }
             }
 
             $wildcards = [];
@@ -359,11 +362,17 @@ class Builder extends HookableBuilder
             }
 
             if (count($wildcards)) {
-                $wildcards = implode(' or ', $wildcards);
+                /*$wildcards = implode(' or ', $wildcards);
                 $score = 1 * $column->getWeight();
-                $case .= " + case when {$wildcards} then {$score} else 0 end";
+                $case .= " + case when {$wildcards} then {$score} else 0 end";*/
+                foreach ($wildcards as $wildcard) {
+                    $score = intval((1 * $column->getWeight()) / count($words));
+                    $case .= "case when {$wildcard} then {$score} else 0 end + ";
+                }
             }
         }
+
+        if (substr($case, -2) == '+ ') $case = substr($case, 0, -2);
 
         return [$case, $bindings];
     }
@@ -390,11 +399,17 @@ class Builder extends HookableBuilder
      */
     protected function buildEqualsCase(Column $column, array $words)
     {
-        $equals = implode(' or ', array_fill(0, count($words), sprintf('%s = ?', $column->getWrapped($this->model))));
+        /*$equals = implode(' or ', array_fill(0, count($words), sprintf('%s = ?', $column->getWrapped($this->model))));
 
         $score = 15 * $column->getWeight();
 
-        return "case when {$equals} then {$score} else 0 end";
+        return "case when {$equals} then {$score} else 0 end";*/
+        $case = '';
+        foreach ($words as $word) {
+            $score = intval((15 * $column->getWeight()) / count($words));
+            $case .= "case when " . sprintf('%s = ?', $column->getWrapped($this->model)) . " then {$score} else 0 end + ";
+        }
+        return $case;
     }
 
     /**
