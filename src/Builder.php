@@ -91,7 +91,11 @@ class Builder extends HookableBuilder
 
         $parser = static::$parser->make();
 
-        $words = is_array($query) ? $query : $parser->parseQuery($query, $fulltext);
+        $words_array = is_array($query) ? $query : $parser->parseQuery($query, $fulltext);
+        $words = [];
+        foreach ($words_array as $word) {
+            if (strlen(str_replace('*', '', $word)) > 2) $words[] = $word;
+        }
 
         $columns = $parser->parseWeights($columns ?: $this->model->getSearchableColumns());
         if (count($words) && count($columns)) {
