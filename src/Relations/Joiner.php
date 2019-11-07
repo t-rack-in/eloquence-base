@@ -135,8 +135,9 @@ class Joiner implements JoinerContract
         list($fk, $pk) = $this->getJoinKeys($relation, $segment);
 
         if (is_array($fk) && is_array($pk)) {
+            $join = (new Join($this->query, $type, $table));
             foreach ($fk as $index => $key) {
-                $join = (new Join($this->query, $type, $table))->on($key, '=', $pk[$index]);
+                $join->on($key, '=', $pk[$index]);
             }
         } else {
             $join = (new Join($this->query, $type, $table))->on($fk, '=', $pk);
@@ -208,6 +209,7 @@ class Joiner implements JoinerContract
             foreach ($relation->getQualifiedOwnerKeyName() as $key) {
                 $foreignKey[] = (isset($relation->getParent()->relationsAliases[$segment]) ? str_replace($relation->getRelated()->getTable(), $relation->getParent()->relationsAliases[$segment], $key) : $key);
             }
+
             return [$relation->getQualifiedForeignKey(), $foreignKey];
         }
 
