@@ -60,7 +60,6 @@ class Joiner implements JoinerContract
         foreach (explode('.', $target) as $segment) {
             $related = $this->joinSegment($related, $segment, $type);
         }
-
         return $related;
     }
 
@@ -210,7 +209,13 @@ class Joiner implements JoinerContract
                 $foreignKey[] = (isset($relation->getParent()->relationsAliases[$segment]) ? str_replace($relation->getRelated()->getTable(), $relation->getParent()->relationsAliases[$segment], $key) : $key);
             }
 
-            return [$relation->getQualifiedForeignKey(), $foreignKey];
+            $primaryKeys = $relation->getQualifiedForeignKey();
+            $pk = [];
+            foreach ($primaryKeys as $primaryKey) {
+                $table = explode('.', $primaryKey)[0];
+                $pk[] = (isset($relation->getRelated()->alias) ? str_replace($relation->getRelated()->getTable() . '.', $relation->getRelated()->alias . '.', $primaryKey) : $primaryKey);
+            }
+            return [$pk, $foreignKey];
         }
 
         if ($relation instanceof BelongsToMany) {
