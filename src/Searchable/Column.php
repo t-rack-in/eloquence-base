@@ -55,7 +55,12 @@ class Column
      */
     public function getQualifiedName($model = false)
     {
-        $relationship = explode('.', $this->getMapping())[0];
+        $relationships = explode('.', $this->getMapping());
+        if (count($relationships) > 2) {
+            $last = array_pop($relationships);
+            $relationships = array(implode('.', $relationships), $last);
+        }
+        $relationship = $relationships[0];
         if ($model) {
             if (isset($model->relationsAliases[$relationship])) {
                 return $model->relationsAliases[$relationship] . '.' . $this->getName();
