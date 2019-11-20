@@ -54,6 +54,7 @@ class Builder extends HookableBuilder
         if ($this->query->from instanceof Subquery) {
             $this->wheresToSubquery($this->query->from);
         }
+
         return parent::get($columns);
     }
 
@@ -121,9 +122,11 @@ class Builder extends HookableBuilder
                         ? array_sum($columns->getWeights()) / 4
                         : (float) $threshold;
 
-        $subquery->select($this->model->getTable() . '.*')
-                 ->from($this->model->getTable())
-                 ->groupBy($this->model->getQualifiedKeyName());
+        $group = (isset($this->model->alias) ? str_replace($this->model->getTable() . '.', $this->model->alias . '.', $this->model->getQualifiedKeyName()) : $this->model->getQualifiedKeyName());
+
+        $subquery->select((isset($this->model->alias) ? $this->model->alias : $this->model->getTable()) . '.*')
+            ->from($this->model->getTable() . (isset($this->model->alias) ? ' as ' . $this->model->alias : ''))
+                 ->groupBy($group);
 
         $this->addSearchClauses($subquery, $columns, $words, $threshold);
 
@@ -250,20 +253,21 @@ class Builder extends HookableBuilder
 
             $bindingsCount = $this->countBindings($where, $type);
 
-            if (in_array($type, $typesToMove) && $this->model->hasColumn($where['column'])) {
+            if (in_array($type, $typesToMove) && ($this->model->hasColumn($where['column']))) {
                 unset($this->query->wheres[$key]);
+                // GAMBIS PARA VERIFICAR SE A CONDIÇÃO JÁ FOI UTILIZADA. AGUARDAR FEEDBACK
+                if (collect($subquery->getQuery()->wheres)->where('column', (isset($this->model->alias) ? $this->model->alias : $this->model->getTable()) . '.' . $where['column'])->count() == 0) {
+                    $where['column'] = (isset($this->model->alias) ? $this->model->alias : $this->model->getTable()) . '.' . $where['column'];
+                    $subquery->getQuery()->wheres[] = $where;
 
-                $where['column'] = $this->model->getTable() . '.' . $where['column'];
+                    $whereBindings = $this->query->getRawBindings()['where'];
 
-                $subquery->getQuery()->wheres[] = $where;
+                    $bindings = array_splice($whereBindings, $bindingKey, $bindingsCount);
 
-                $whereBindings = $this->query->getRawBindings()['where'];
+                    $this->query->setBindings($whereBindings, 'where');
 
-                $bindings = array_splice($whereBindings, $bindingKey, $bindingsCount);
-
-                $this->query->setBindings($whereBindings, 'where');
-
-                $this->query->addBinding($bindings, 'select');
+                    $this->query->addBinding($bindings, 'select');
+                }
 
             // if where is not to be moved onto the subquery, let's increment
             // binding key appropriately, so we can reliably move binding
