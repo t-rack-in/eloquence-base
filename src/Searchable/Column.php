@@ -64,6 +64,8 @@ class Column
         if ($model) {
             if (isset($model->relationsAliases[$relationship])) {
                 return $model->relationsAliases[$relationship] . '.' . $this->getName();
+            } elseif (isset($model->alias)) {
+                return (isset($model->alias) ? $model->alias : $model->getTable()) . '.'.$this->getName();
             }
         }
         return $this->getTable().'.'.$this->getName();
