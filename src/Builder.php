@@ -63,15 +63,14 @@ class Builder extends HookableBuilder
      * @param  array $columns
      * @return \Illuminate\Database\Eloquent\Collection
      */
-    /*public function count($columns = ['*'])
+    public function count($columns = ['*'])
     {
-        return 100;
         if ($this->query->from instanceof Subquery) {
             $this->wheresToSubquery($this->query->from);
         }
 
         return parent::count($columns);
-    }*/
+    }
 
     /**
      * Search through any columns on current table or any defined relations
