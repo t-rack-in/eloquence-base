@@ -197,31 +197,52 @@ class Joiner implements JoinerContract
 
         if ($relation instanceof HasOneOrMany) {
             $foreignKey = [];
-            foreach ($relation->getQualifiedForeignKeyName() as $key) {
-                $foreignKey[] = (isset($relation->getParent()->relationsAliases[$segment]) ? str_replace($relation->getRelated()->getTable(), $relation->getParent()->relationsAliases[$segment], $key) : $key);
+
+            if(is_array($relation->getQualifiedOwnerKeyName())) {
+                foreach ($relation->getQualifiedForeignKeyName() as $key) {
+                    $foreignKey[] = (isset($relation->getParent()->relationsAliases[$segment]) ? str_replace($relation->getRelated()->getTable(), $relation->getParent()->relationsAliases[$segment], $key) : $key);
+                }
+            } else {
+                $foreignKey[] = (isset($relation->getParent()->relationsAliases[$segment]) ? str_replace($relation->getRelated()->getTable(), $relation->getParent()->relationsAliases[$segment], $relation->getQualifiedOwnerKeyName()) : $relation->getQualifiedOwnerKeyName());
             }
 
             $primaryKeys = $relation->getQualifiedParentKeyName();
             $pk = [];
 
-            foreach ($primaryKeys as $primaryKey) {
-                $table = explode('.', $primaryKey)[0];
-                $pk[] = (isset($relation->getParent()->alias) ? str_replace($relation->getParent()->getTable() . '.', $relation->getParent()->alias . '.', $primaryKey) : $primaryKey);
+            if(is_array($primaryKeys)) {
+                foreach ($primaryKeys as $primaryKey) {
+                    $table = explode('.', $primaryKey)[0];
+                    $pk[] = (isset($relation->getParent()->alias) ? str_replace($relation->getParent()->getTable() . '.', $relation->getParent()->alias . '.', $primaryKey) : $primaryKey);
+                }
+            } else {
+                $table = explode('.', $primaryKeys)[0];
+                $pk[] = (isset($relation->getParent()->alias) ? str_replace($relation->getParent()->getTable() . '.', $relation->getParent()->alias . '.', $primaryKeys) : $primaryKeys);
             }
+
             return [$foreignKey, $pk];
         }
 
         if ($relation instanceof BelongsTo) {
             $foreignKey = [];
-            foreach ($relation->getQualifiedOwnerKeyName() as $key) {
-                $foreignKey[] = (isset($relation->getParent()->relationsAliases[$segment]) ? str_replace($relation->getRelated()->getTable(), $relation->getParent()->relationsAliases[$segment], $key) : $key);
+
+            if(is_array($relation->getQualifiedOwnerKeyName())) {
+                foreach ($relation->getQualifiedOwnerKeyName() as $key) {
+                    $foreignKey[] = (isset($relation->getParent()->relationsAliases[$segment]) ? str_replace($relation->getRelated()->getTable(), $relation->getParent()->relationsAliases[$segment], $key) : $key);
+                }
+            } else {
+                $foreignKey[] = (isset($relation->getParent()->relationsAliases[$segment]) ? str_replace($relation->getRelated()->getTable(), $relation->getParent()->relationsAliases[$segment], $relation->getQualifiedOwnerKeyName()) : $relation->getQualifiedOwnerKeyName());
             }
 
-            $primaryKeys = $relation->getQualifiedForeignKey();
+            $primaryKeys = $relation->getQualifiedForeignKeyName();
             $pk = [];
-            foreach ($primaryKeys as $primaryKey) {
-                $table = explode('.', $primaryKey)[0];
-                $pk[] = (isset($relation->getRelated()->alias) ? str_replace($relation->getRelated()->getTable() . '.', $relation->getRelated()->alias . '.', $primaryKey) : $primaryKey);
+            if(is_array($primaryKeys)) {
+                foreach ($primaryKeys as $primaryKey) {
+                    $table = explode('.', $primaryKey)[0];
+                    $pk[] = (isset($relation->getRelated()->alias) ? str_replace($relation->getRelated()->getTable() . '.', $relation->getRelated()->alias . '.', $primaryKey) : $primaryKey);
+                }
+            } else {
+                $table = explode('.', $primaryKeys)[0];
+                $pk[] = (isset($relation->getRelated()->alias) ? str_replace($relation->getRelated()->getTable() . '.', $relation->getRelated()->alias . '.', $primaryKeys) : $primaryKeys);
             }
             return [$pk, $foreignKey];
         }
