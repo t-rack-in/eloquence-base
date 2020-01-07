@@ -1,5 +1,5 @@
 {
-    "name": "ogestor/eloquence-base",
+    "name": "ceopag/eloquence-base",
     "description": "Flexible Searchable, Mappable, Metable, Validation and more extensions for Laravel Eloquent ORM.",
     "license": "MIT",
     "support": {
@@ -24,7 +24,7 @@
     ],
     "require": {
         "php": ">=7.0.0",
-        "ogestor/hookable": "^5.5",
+        "ceopag/hookable": "^5.6",
         "illuminate/database": "^5.5"
     },
     "require-dev": {
