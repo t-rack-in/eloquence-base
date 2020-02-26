@@ -24,7 +24,7 @@
     ],
     "require": {
         "php": ">=7.0.0",
-        "ceopag/hookable": "^5.6",
+        "t-rack-in/hookable": "^5.6",
         "illuminate/database": "^5.5"
     },
     "require-dev": {
